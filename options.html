@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Extension Options</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Extension Options</h1>
+  <label for="accessToken">Access Token:</label>
+  <input type="text" id="accessToken">
+  <button id="saveTokenButton">Save</button>
+  <button id="fetchCollections">Fetch Collections</button>
+
+  <div id="collectionSection" style="display: none;">
+    <h2>Select Collection</h2>
+    <select id="collectionSelect">
+      <!-- Options will be populated dynamically -->
+    </select>
+    <button id="saveCollectionButton">Save Collection</button>
+  </div>
+
+  <button id="syncFolders">Sync Folders</button>
+
+  <div id="outputContainer"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>
