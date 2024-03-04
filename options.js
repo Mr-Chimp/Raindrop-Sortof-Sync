@@ -127,7 +127,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
       childCollections = data.items;
 
-
       function findChildren(parentId, items) {
         const children = items.filter(item => item.parent && item.parent.$id === parentId);
 
@@ -295,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
               const response = await fetch('https://api.raindrop.io/rest/v1/collections/childrens', {
                   method: 'GET',
                   headers: {
-                      'Authorization': 'Bearer 11ed7fea-b703-4f47-83b7-595acc7d2660'
+                      'Authorization': 'Bearer ' + accessToken
                   }
               });
               collectionsData = await response.json();
