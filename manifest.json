@@ -3,7 +3,7 @@
   "name": "Raindrop Sync",
   "version": "1.0",
   "description": "A fairly simple extension that syncs a Raindrop collection with Chrome's bookmarks",
-  "permissions": ["storage","https://api.raindrop.io/"],
+  "permissions": ["storage","bookmarks"],
   "action": {
     "default_popup": "popup.html", 
     "default_icon": {

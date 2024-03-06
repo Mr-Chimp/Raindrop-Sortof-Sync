@@ -1,3 +1,117 @@
+const createBookmarkFolder = async (parentFolderId, folderTitle) => {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.create({ parentId: parentFolderId, title: folderTitle });
+  });
+};
+
+// Add a bookmark for www.google.com
+function addBookmark() {
+  
+
+  chrome.bookmarks.get('1').then((result) => {
+    console.log(result);
+  })
+  
+
+  chrome.bookmarks.create(
+    {'parentId': '1', 'title': 'Extension bookmarks'},
+    function(newFolder) {
+      console.log("added folder: " + newFolder.title);
+    },
+  );
+
+  chrome.bookmarks.create(
+    {
+      parentId: '1',
+      title: 'Google',
+      url: 'https://www.google.com'
+    },
+    () => {
+      console.log('Bookmark added');
+      location.reload(); // Refresh the popup
+    }
+  );
+}
+
+const createBookmark = async (folderId, bookmarkTitle, bookmarkUrl) => {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.create({
+      parentId: folderId,
+      title: bookmarkTitle,
+      url: bookmarkUrl,
+    });
+  });
+};
+
+
+
+// Function to recursively remove bookmarks and folders
+function removeBookmarks(bookmarkNode) {
+  if (bookmarkNode.children) {
+    for (let child of bookmarkNode.children) {
+      removeBookmarks(child);
+    }
+  }
+
+  // Remove the bookmark or folder
+  chrome.bookmarks.remove(bookmarkNode.id);
+}
+
+// Function to get all bookmarks in a folder
+function removeBookmarksInFolder(folderId) {
+  chrome.bookmarks.getSubTree(folderId, function (results) {
+    if (results && results.length > 0 && results[0].children) {
+      for (let child of results[0].children) {
+        removeBookmarks(child);
+      }
+    } else {
+      console.log('Folder not found or empty.');
+    }
+  });
+}
+
+function arrayToHTMLList(array) {
+  if (!Array.isArray(array) || array.length === 0) {
+      return '';
+  }
+
+  return `<ul>${array.map(item => `<li>${item.title}${arrayToHTMLList(item.children)}</li>`).join('')}</ul>`;
+}
+
+/**
+ * Creates bookmark folders based on the given parent ID and items array, intended to be run with the collection folders built in the fetch statement on a sync
+ *
+ * @param {string} parentId - The ID of the parent bookmark folder.
+ * @param {Array} items - An array of items representing the bookmark folders to be created.
+ * @return {void} 
+ */
+function createBookmarkFolders(parentId, items) {
+  const promises = items.map(item => {
+    return new Promise(resolve => {
+      chrome.bookmarks.create({ parentId, title: item.title }, bookmark => {
+        item.bookmarkId = bookmark.id;
+        if (item.children && item.children.length > 0) {
+          createBookmarkFolders(bookmark.id, item.children)
+            .then(() => resolve()); // Resolve the promise after processing children
+        } else {
+          resolve(); // Resolve the promise if there are no children
+        }
+      });
+    });
+  });
+
+  return Promise.all(promises);
+}
+
+// Function to create additional bookmarks for each item
+
+//TODO - Things to do
+// - Creating bookmarks in sub folders doesn't seem to work 'Training Videos' - 42058901 is an example, probably just not looping correctly somewhere
+// - Want to sort the array
+// - Want to check each folder to ensure it is getting things correctly
+
+
+
 document.addEventListener('DOMContentLoaded', function() {
     const accessTokenInput = document.getElementById('accessToken');
     const saveTokenButton = document.getElementById('saveTokenButton');
@@ -7,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fetchCollectionButton = document.getElementById('fetchCollections');
     const syncFolders = document.getElementById('syncFolders');
     const outputContainer = document.getElementById('outputContainer');
+    const progressBar = document.getElementById('progress-bar');
 
     let chosenCollection = 0;
   
@@ -52,6 +167,75 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
 
+    function updateProgress(current, total) {
+      const progress = (current / total) * 100;
+      progressBar.style.width = `${progress}%`;
+    }
+
+    async function populateBookmarks(items) {
+      await createBookmarkFolders('1', items);
+
+      const requestsPerMinute = 120;
+      const rateLimit = 60 * 1000 / requestsPerMinute; // Convert minutes to milliseconds
+      let currentIndex = 0;
+
+      function processItem() {
+        if (currentIndex < items.length) {
+          const item = items[currentIndex];
+          const perPage = 20;
+         
+          // Use the bookmarkId stored in the item
+          const parentId = item.bookmarkId;
+
+           // Function to handle fetching data for a specific page
+          const fetchDataForPage = (page = 0) => {
+            fetch(`https://api.raindrop.io/rest/v1/raindrops/${item.id}?page=${page}&perPage=${perPage}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': 'Bearer ' + accessTokenInput.value
+              }
+            })
+            .then(response => response.json())
+            .then(data => {
+              // Process additional data
+              data.items.forEach(item => {
+                createBookmark(String(parentId), item.title, item.link);
+              });
+
+              // Check if there are more pages to fetch
+              const totalItemsProcessed = page * perPage;
+              if (totalItemsProcessed < data.count) {
+                // Move to the next page
+                fetchDataForPage(page + 1);
+              }  else {
+                // Update progress and move to the next item
+                updateProgress(currentIndex + 1, items.length);
+
+                // Move to the next item after the rate limit timeout
+                setTimeout(() => {
+                  currentIndex++;
+                  processItem();
+                }, rateLimit);
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching additional data:', error);
+              currentIndex++;
+              processItem();
+            });
+          };
+
+          fetchDataForPage();
+  
+       
+        }
+      }
+
+      // Start processing items
+      processItem();
+    
+    }
+
 
     fetchCollectionButton.addEventListener('click', function() {
         // Call the fetchCollections method with the saved access token
@@ -60,6 +244,11 @@ document.addEventListener('DOMContentLoaded', function() {
   
     // Save selected collection
     syncFolders.addEventListener('click', function() {
+     
+        //Remove all bookmarks in folder ID '1' (bookmarks bar)
+        removeBookmarksInFolder('1');
+       
+/*
       let collectionsArray = [];
       // Call the fetchCollections method with the saved access token
       let response = fetch('https://api.raindrop.io/rest/v1/collections', {
@@ -81,40 +270,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         });
-        
+        */
 
       let childCopy = [], childCollections = [], selectedItems = [], parentMap = {};
 
-      function arrayToHTMLList(array) {
-        if (!Array.isArray(array) || array.length === 0) {
-            return '';
-        }
-    
-        return `<ul>${array.map(item => `<li>${item.title}${arrayToHTMLList(item.children)}</li>`).join('')}</ul>`;
-    }
-    
-    function generateNestedList(items) {
-      let result = '<ul>';
-    
-      items.forEach(item => {
-        result += `<li>${item.title}`;
-    
-        if (item.children && item.children.length > 0) {
-          // Recursively generate nested list for children
-          result += generateNestedList(item.children);
-        }
-    
-        result += '</li>';
-      });
-    
-      result += '</ul>';
-      return result;
-    }
-    
-
     //Here we are going to loop through the list of children, looking for everything that is in one particular collection
     fetch('https://api.raindrop.io/rest/v1/collections/childrens', {
-      //fetch('https://api.raindrop.io/rest/v1/collection/'+chosenCollection, {
           method: 'GET',
           headers: {
             'Authorization': 'Bearer ' + accessTokenInput.value
@@ -155,109 +316,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
       selectedItems = findChildren(chosenCollection,childCollections);
 
-      outputContainer.innerHTML = generateNestedList(selectedItems);
+      //Output the collections into a html structure for debug purposes
+      //outputContainer.innerHTML = arrayToHTMLList(selectedItems);
+
+      //Now we have all the children we need to loop through them and create bookmarks for them
+      //createBookmarkFolders('1', selectedItems);
+      populateBookmarks(selectedItems);
       
-    }); //End tehn
+    }); //End then
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-      //This code gets the children, loops through them and populates an arrya with the collections. It is incorrect hwoever
-      //Now get this children and build the array:
-      fetch('https://api.raindrop.io/rest/v1/collections/childrens', {
-        //fetch('https://api.raindrop.io/rest/v1/collection/'+chosenCollection, {
-            method: 'GET',
-            headers: {
-              'Authorization': 'Bearer ' + accessTokenInput.value
-            }
-      })
-      .then(response => {
-        return response.json();
-      })
-      .then(data => {
-
-        function buildCollectionRecursively(items) {
-          items.forEach((child, index) => {
-            let tmp = {
-              id: child._id,
-              title: child.title,
-              children: []
-            }
-  
-            const parentIndex = collectionsArray.findIndex(item => item.id === child.parent.$id);
-  
-            
-            // If the parent is found and has 'children' property, add the child to its children array
-            if (parentIndex !== -1 && collectionsArray[parentIndex].hasOwnProperty('children')) {
-                collectionsArray[parentIndex].children.push(tmp);
-  
-                // Remove the processed item from the copied array
-                childCopy.splice(index, 1);
-            } 
-  
-          }); //End data.items foreach
-        }
-
-        console.log('Direct Child Return',data.items);
-        //Create a copy of the children
-        childCopy = [...data.items];
-        //Loop through the children and add them to the parent IF theirt parent exists in the root collection
-        buildCollectionRecursively(data.items);
-
-        console.log(childCopy);
-        while (childCopy.length > 2) {
-          // Your logic here
-          console.log('While Loop');
-          buildCollectionRecursively(data.items);
-          console.log(childCopy);
-        }
-        //Now we need to recursively iterate through the remaining items to see if we can process them yet
-        console.log("Complete",childCopy);
-
-        //Find index of specific item
-        const theIndex = collectionsArray.findIndex(item => item.id === 42053423);
-        console.log('Missing Index:', theIndex);
-
-
-        outputContainer.innerHTML = arrayToHTMLList(collectionsArray);
-
-
-      })
-      .catch(error => {
-        console.log('Error:', error);
-      })
-      .finally(() => {
-        
-      });
-
-      */
-      
-
-        
-      //Load up the children collections
-      /*chrome.storage.sync.get(['selectedCollection'], async function(result) {
-          let collections = await fetchNestedCollections(null, result.selectedCollection);
-          console.log("Results");
-          console.log(collections);
-      });
-      */
   });
 
 
@@ -286,40 +356,5 @@ document.addEventListener('DOMContentLoaded', function() {
           });
     }
 
-
-
-    async function fetchNestedCollections(collectionsData, parentId) {
-      try {
-          if (!collectionsData) {
-              const response = await fetch('https://api.raindrop.io/rest/v1/collections/childrens', {
-                  method: 'GET',
-                  headers: {
-                      'Authorization': 'Bearer ' + accessToken
-                  }
-              });
-              collectionsData = await response.json();
-          }
-  
-          function getNestedCollections(collectionsData, parentId) {
-              const nestedCollections = {};
-              collectionsData.items.forEach(collection => {
-                console.log(parentId);
-                  //if (collection.parent && collection.parent.$id === parentId) {
-                      const collectionId = collection._id;
-                      const nested = getNestedCollections(collectionsData, collectionId);
-                      collection.children = nested;
-                      nestedCollections[collectionId] = collection;
-                  //}
-              });
-              return Object.values(nestedCollections);
-          }
-  
-          const rootCollections = getNestedCollections(collectionsData, parentId);
-          return rootCollections;
-      } catch (error) {
-          console.error('Error fetching child collections:', error);
-          return [];
-      }
-  }
 
 });
