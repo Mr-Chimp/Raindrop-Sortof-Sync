@@ -5,7 +5,6 @@
   "description": "A fairly simple extension that syncs a Raindrop collection with Chrome's bookmarks",
   "permissions": ["storage","bookmarks"],
   "action": {
-    "default_popup": "popup.html", 
     "default_icon": {
       "16": "icon_16.png",
       "32": "icon_32.png"
@@ -13,9 +12,6 @@
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
-  },
-  "background": {
-    "service_worker": "background.js"
   },
   "options_page": "options.html"
 }

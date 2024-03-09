@@ -1,4 +1,8 @@
 # Raindrop-Sortof-Sync
-A chrome extension that sort of syncs with Raindrop
+A chrome extension that sort of syncs with Raindrop, so it doesn't sync at all but what it does do is let you copy Raindrops from a Raindrop.io collection over to a local bookmark folder in your browser. It has built in rate limiting to stick within Raindrop.io's rate limits and as far as I can tell works.
 
-Right now it can let you pick from a root level collection and then find all the children in that collection. That is it...
+I do not intend to develop this into a full sync extension but will fix bugs if any arise.
+
+##Known Bugs
+- The text that updates during sync to let you know what is going on doesn't run correctly at the end of the fetching process which it should do
+
