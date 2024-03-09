@@ -21,11 +21,40 @@ Raindrop-Sortof-Sync is a Chrome extension designed to facilitate the transfer o
 
 - The text that updates during sync to inform about the ongoing process may not run correctly at the end of the fetching process.
 
-## Getting Started
+## Setting Up Raindrop-Sortof-Sync Chrome Extension
 
-1. [Download the extension](#) (Add link to extension when ready)
-2. [Install the extension](#) (Provide installation instructions)
-3. [Configure your settings](#) (Explain how to set up and configure the extension)
+1. **Raindrop.io Integration Setup:**
+   - Log in to Raindrop.io and navigate to your account settings.
+   - Click on 'Integrations' and in the 'For Developers' seciton create a new App and give it a random name
+   - Copy the Client Secret.
+     ![App screen in Raindrop.io](url_to_image)
+
+2. **Extension Options:**
+   - Install the extension
+   - Pin the extension to the taskbar and right-click.
+   - Choose 'Options' from the context menu.
+
+3. **Client Secret Configuration:**
+   - Paste the Client Secret into the Access Token box.
+     ![Access Token Box](url_to_image)
+
+4. **Select Raindrop Collection:**
+   - Click 'Refresh Collections' to view your Raindrop.io collections.
+   - Choose a collection and click 'Save Collection.'
+     ![Collection Box](url_to_image)
+
+5. **Select Local Bookmark Folder:**
+   - In the 'Select Local Folder' box, click 'Refresh Folders.'
+   - Choose the desired local folder for your bookmarks.
+   - Click 'Save Folder.'
+     ![Select Folder Box](url_to_image)
+
+6. **Sync Bookmarks:**
+   - In the 'Sync Bookmarks' section, press the 'Sync' button.
+   - This action is destructive and will clear the selected folder before bringing in items from the chosen Raindrop.io collection.
+     ![Sync Bookmarks Box](url_to_image)
+
+**Note:** Ensure the accuracy of your actions as this process is irreversible.
 
 ## Bug Reporting
 
