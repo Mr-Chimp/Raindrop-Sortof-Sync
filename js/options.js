@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
           //Wait for 1 minute before carrying on
           await new Promise(resolve => setTimeout(resolve, 60000));
         }
-    
+
         // Check if there are more pages to fetch
         const totalItemsProcessed = page * perPage;
         if (totalItemsProcessed < data.count) {
@@ -273,8 +273,6 @@ document.addEventListener('DOMContentLoaded', function() {
       if (currentIndex < flattenedItems.length) {
         fetchDataForPage(flattenedItems[currentIndex]);
       }
-
-    
     }
 
 
