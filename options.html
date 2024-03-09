@@ -71,7 +71,7 @@
       margin-top: 10px;
     }
 
-    .task-status {
+    #task-status {
       margin-top: 10px;
       font-weight: bold;
       color: #333;
@@ -80,7 +80,7 @@
     #progress-container {
       width: 100%;
       background-color: #f0f0f0;
-      margin-bottom: 10px;
+      margin: 10px 0px;
     }
 
     #progress-bar {
@@ -142,7 +142,10 @@
       <div id="progress-container">
         <div id="progress-bar"></div>
       </div>
-      <div class="task-status"></div>
+      <div id="task-status" class="hide">
+        <p><strong>Current Action:</strong></p>
+        <p id="currentAction">n/a</p>
+      </div>
     </section>
   </div>
 
