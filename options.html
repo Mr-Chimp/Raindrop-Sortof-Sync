@@ -1,34 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Extension Options</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: 'Arial', sans-serif;
+      margin: 20px;
+      background-color: #f4f4f4;
+    
     }
-    h1 {
+
+    .content {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .buttonGroup {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* Two columns with equal width */
+      gap: 10px; /* Adjust the gap between grid items as needed */
+    }
+
+    .buttonGroup > * {
+      padding: 10px;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    p {
+      color: #666;
       margin-bottom: 20px;
     }
+
+    section {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
     label {
       display: block;
-      margin-bottom: 10px;
+      margin-top: 10px;
     }
-    input[type="text"] {
+
+    select, input, button {
+      margin-top: 5px;
+      padding: 8px;
       width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
       box-sizing: border-box;
     }
+
     button {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
+      background-color: #4caf50;
+      color: #fff;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #45a049;
+    }
+
+    progress {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .task-status {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #333;
     }
 
     #progress-container {
@@ -43,29 +89,65 @@
       width: 0;
       transition: width 0.3s ease;
     }
+
+    .hide { display: none;}
   </style>
 </head>
 <body>
-  <h1>Extension Options</h1>
-  <label for="accessToken">Access Token:</label>
-  <input type="text" id="accessToken">
-  <button id="saveTokenButton">Save</button>
-  <button id="fetchCollections">Fetch Collections</button>
 
-  <div id="collectionSection" style="display: none;">
-    <h2>Select Collection</h2>
-    <select id="collectionSelect">
-      <!-- Options will be populated dynamically -->
-    </select>
-    <button id="saveCollectionButton">Save Collection</button>
+  <div>
+    <h2>Extension Options</h2>
+    <p>Configure your extension settings below:</p>
   </div>
 
-  <button id="syncFolders">Sync Folders</button>
-  <div id="progress-container">
-    <div id="progress-bar"></div>
-  </div>
-  <div id="outputContainer"></div>
+  <div class="content">
 
-  <script src="options.js"></script>
+    <section>
+      <h3>Access Token</h3>
+      <p>Enter your access token below:</p>
+      <label for="accessToken">Access Token:</label>
+      <input type="text" id="accessToken" placeholder="Enter Access Token">
+      <button id="saveTokenButton">Save</button>
+    </section>
+  
+    <section>
+      <h3>Choose a Collection</h3>
+      <p id="collectionContainer" class="hide">Current collection: <span id="currentCollection">n/a</span></p>
+      <p>Choose a collection from the list below, if the list is empty then click 'Refresh Collections':</p>
+      <label for="collectionSelect">Select Collection:</label>
+      <select id="collectionSelect"></select>
+      <div class="buttonGroup">
+        <button id="fetchCollections">Refresh Collections</button>
+        <button id="saveCollectionButton">Save Collection</button>
+      </div>
+    
+    </section>
+  
+    <section>
+      <h3>Select Local Folder</h3>
+      <p id="folderContainer" class="hide">Current collection: <span id="folderID">n/a</span></p>
+      <p>Choose a local folder from the list below:</p>
+      <label for="folderSelect">Select Local Folder:</label>
+      <select id="folderSelect"></select>
+      <div class="buttonGroup">
+        <button id="refreshFolders">Refresh Folders</button>
+        <button id="saveFolder">Save Folder</button>
+      </div>
+    </section>
+  
+    <section>
+      <h3>Sync Bookmarks</h3>
+      <p>Click the sync button to start the synchronization process:</p>
+      <button id="syncFolders">Sync</button>
+      <div id="progress-container">
+        <div id="progress-bar"></div>
+      </div>
+      <div class="task-status"></div>
+    </section>
+  </div>
+
+  <script src="js/bookmarkUtils.js"></script>
+  <script src="js/options.js"></script>
 </body>
 </html>
+
