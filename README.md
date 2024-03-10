@@ -60,4 +60,4 @@ If you encounter any issues or bugs, please report them on the GitHub issue page
 
 ## License
 TODO - Actually do the license bits here
-This project is licensed under the [MIT License](LICENSE.md) - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the [MIT License](LICENSE.md).
